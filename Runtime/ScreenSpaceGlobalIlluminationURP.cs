@@ -822,22 +822,41 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
             ref var m_HistoryIndirectDiffuseHandle = ref cameraHistoryData[cameraHistoryIndex].historyIndirectDiffuseHandle;
             ref var m_AccumulateHistorySampleHandle = ref cameraHistoryData[cameraHistoryIndex].accumulateHistorySampleHandle;
 
-            ref var prevCamInvVPMatrix = ref cameraHistoryData[cameraHistoryIndex].prevCamInvVPMatrix;
-            ref var prevCameraPositionWS = ref cameraHistoryData[cameraHistoryIndex].prevCameraPositionWS;
             ref var historyCameraHash = ref cameraHistoryData[cameraHistoryIndex].hash;
 
-            if (prevCamInvVPMatrix != null)
-                m_SSGIMaterial.SetMatrix(_PrevInvViewProjMatrix, prevCamInvVPMatrix);
-            else
-                m_SSGIMaterial.SetMatrix(_PrevInvViewProjMatrix, camera.previousViewProjectionMatrix.inverse);
+            bool isStereo = camera.stereoEnabled;
+            Matrix4x4[] prevMatrices = cameraHistoryData[cameraHistoryIndex].prevCamInvVPMatrix;
+            Vector3[] prevPositions = cameraHistoryData[cameraHistoryIndex].prevCameraPositionWS;
 
-            if (prevCameraPositionWS != null)
-                m_SSGIMaterial.SetVector(_PrevCameraPositionWS, prevCameraPositionWS);
-            else
-                m_SSGIMaterial.SetVector(_PrevCameraPositionWS, camera.transform.position);
+            var setMatrices = new Matrix4x4[2];
+            var setPositions = new Vector4[2];
+            Matrix4x4 fallbackMatrix = camera.previousViewProjectionMatrix.inverse;
+            for (int eye = 0; eye < 2; eye++)
+            {
+                setMatrices[eye] = prevMatrices != null ? prevMatrices[eye] : fallbackMatrix;
+                setPositions[eye] = prevPositions != null ? (Vector4)prevPositions[eye] : (Vector4)camera.transform.position;
+            }
+            m_SSGIMaterial.SetMatrixArray(_PrevInvViewProjMatrix, setMatrices);
+            m_SSGIMaterial.SetVectorArray(_PrevCameraPositionWS, setPositions);
 
-            prevCamInvVPMatrix = (GL.GetGPUProjectionMatrix(camera.projectionMatrix, true) * renderingData.cameraData.GetViewMatrix()).inverse;
-            prevCameraPositionWS = camera.transform.position;
+            var currentMatrices = new Matrix4x4[2];
+            var currentPositions = new Vector3[2];
+            if (isStereo)
+            {
+                for (int eye = 0; eye < 2; eye++)
+                {
+                    var eyeEnum = (Camera.StereoscopicEye)eye;
+                    currentMatrices[eye] = (GL.GetGPUProjectionMatrix(camera.GetStereoProjectionMatrix(eyeEnum), true) * camera.GetStereoViewMatrix(eyeEnum)).inverse;
+                    currentPositions[eye] = camera.transform.position;
+                }
+            }
+            else
+            {
+                currentMatrices[0] = currentMatrices[1] = (GL.GetGPUProjectionMatrix(camera.projectionMatrix, true) * renderingData.cameraData.GetViewMatrix()).inverse;
+                currentPositions[0] = currentPositions[1] = camera.transform.position;
+            }
+            cameraHistoryData[cameraHistoryIndex].prevCamInvVPMatrix = currentMatrices;
+            cameraHistoryData[cameraHistoryIndex].prevCameraPositionWS = currentPositions;
             historyCameraHash = currentCameraHash;
 
             // The spread angle is used to compute the world space pixel footprint during denoising.
@@ -1146,22 +1165,40 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
                 // Assign the data to index 0 for the new camera
                 cameraHistoryIndex = cameraHasChanged ? 0 : cameraHistoryIndex;
 
-                ref var prevCamInvVPMatrix = ref cameraHistoryData[cameraHistoryIndex].prevCamInvVPMatrix;
-                ref var prevCameraPositionWS = ref cameraHistoryData[cameraHistoryIndex].prevCameraPositionWS;
                 ref var historyCameraHash = ref cameraHistoryData[cameraHistoryIndex].hash;
 
-                if (prevCamInvVPMatrix != null)
-                    m_SSGIMaterial.SetMatrix(_PrevInvViewProjMatrix, prevCamInvVPMatrix);
-                else
-                    m_SSGIMaterial.SetMatrix(_PrevInvViewProjMatrix, camera.previousViewProjectionMatrix.inverse);
+                bool isStereo = camera.stereoEnabled;
+                Matrix4x4[] prevMatrices = cameraHistoryData[cameraHistoryIndex].prevCamInvVPMatrix;
+                Vector3[] prevPositions = cameraHistoryData[cameraHistoryIndex].prevCameraPositionWS;
 
-                if (prevCameraPositionWS != null)
-                    m_SSGIMaterial.SetVector(_PrevCameraPositionWS, prevCameraPositionWS);
-                else
-                    m_SSGIMaterial.SetVector(_PrevCameraPositionWS, camera.transform.position);
+                var setMatrices = new Matrix4x4[2];
+                var setPositions = new Vector4[2];
+                Matrix4x4 fallbackMatrix = camera.previousViewProjectionMatrix.inverse;
+                for (int eye = 0; eye < 2; eye++)
+                {
+                    setMatrices[eye] = prevMatrices != null ? prevMatrices[eye] : fallbackMatrix;
+                    setPositions[eye] = prevPositions != null ? (Vector4)prevPositions[eye] : (Vector4)camera.transform.position;
+                }
+                m_SSGIMaterial.SetMatrixArray(_PrevInvViewProjMatrix, setMatrices);
+                m_SSGIMaterial.SetVectorArray(_PrevCameraPositionWS, setPositions);
 
-                prevCamInvVPMatrix = (GL.GetGPUProjectionMatrix(camera.projectionMatrix, true) * cameraData.GetViewMatrix()).inverse;
-                prevCameraPositionWS = camera.transform.position;
+                var currentMatrices = new Matrix4x4[2];
+                var currentPositions = new Vector3[2];
+                if (isStereo)
+                {
+                    for (int eye = 0; eye < 2; eye++)
+                    {
+                        currentMatrices[eye] = (GL.GetGPUProjectionMatrix(cameraData.GetProjectionMatrix(eye), true) * cameraData.GetViewMatrix(eye)).inverse;
+                        currentPositions[eye] = camera.transform.position;
+                    }
+                }
+                else
+                {
+                    currentMatrices[0] = currentMatrices[1] = (GL.GetGPUProjectionMatrix(camera.projectionMatrix, true) * cameraData.GetViewMatrix()).inverse;
+                    currentPositions[0] = currentPositions[1] = camera.transform.position;
+                }
+                cameraHistoryData[cameraHistoryIndex].prevCamInvVPMatrix = currentMatrices;
+                cameraHistoryData[cameraHistoryIndex].prevCameraPositionWS = currentPositions;
                 historyCameraHash = currentCameraHash;
 
                 // The spread angle is used to compute the world space pixel footprint during denoising.
@@ -1336,8 +1373,10 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
         private struct CameraHistoryData
         {
             public int hash;
-            public Matrix4x4 prevCamInvVPMatrix;
-            public Vector3 prevCameraPositionWS;
+            // Index 0 = left eye / mono, index 1 = right eye (SPI VR).
+            // Null until the first frame has been rendered for this camera.
+            public Matrix4x4[] prevCamInvVPMatrix;
+            public Vector3[] prevCameraPositionWS;
             public float scaledWidth;
             public float scaledHeight;
 

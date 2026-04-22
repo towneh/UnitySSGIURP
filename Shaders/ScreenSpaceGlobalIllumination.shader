@@ -37,6 +37,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
@@ -129,6 +130,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             #pragma multi_compile_local_fragment _ _FP_REFL_PROBE_ATLAS
             #pragma multi_compile_local_fragment _ _BACKFACE_TEXTURES
@@ -189,7 +191,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
                 prevDeviceDepth = lerp(UNITY_NEAR_CLIP_VALUE, 1, prevDeviceDepth);
             #endif
 
-                float3 prevPositionWS = ComputeWorldSpacePosition(prevUV, prevDeviceDepth, _PrevInvViewProjMatrix);
+                float3 prevPositionWS = ComputeWorldSpacePosition(prevUV, prevDeviceDepth, _PrevInvViewProjMatrix[unity_StereoEyeIndex]);
                 half radius = length(prevPositionWS - positionWS) / maxRadius;
 
                 bool canBeReprojected = (prevUV.x <= 1.0 && prevUV.x >= 0.0 && prevUV.y <= 1.0 && prevUV.y >= 0.0 && radius <= 1.0 && _HistoryTextureValid);
@@ -275,6 +277,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
@@ -381,6 +384,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
@@ -512,6 +516,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             half4 frag(Varyings input) : SV_Target
             {
@@ -592,6 +597,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             // URP pre-defined the following variable on 2023.2+.
         #if UNITY_VERSION < 202320
@@ -634,6 +640,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
@@ -852,6 +859,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             #include "./SSGI.hlsl"
 
@@ -917,6 +925,7 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
+            #pragma multi_compile_instancing
 
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
@@ -1075,7 +1084,8 @@ Shader "Hidden/Lighting/ScreenSpaceGlobalIllumination"
             #pragma fragment frag
 
             #pragma target 3.5
-            
+            #pragma multi_compile_instancing
+
             // URP pre-defined the following variable on 2023.2+.
         #if UNITY_VERSION < 202320
             float4 _BlitTexture_TexelSize;

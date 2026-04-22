@@ -119,8 +119,8 @@ half _HistoryTextureValid;
 half _Thickness;
 half _Thickness_Increment;
 
-float4x4 _PrevInvViewProjMatrix;
-float3 _PrevCameraPositionWS;
+float4x4 _PrevInvViewProjMatrix[2];
+float4 _PrevCameraPositionWS[2];
 half _PixelSpreadAngleTangent;
 
 half _AggressiveDenoise;
