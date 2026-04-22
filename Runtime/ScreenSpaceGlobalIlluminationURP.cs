@@ -526,6 +526,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
         public PreRenderScreenSpaceGlobalIlluminationPass() { }
 
         #region Non Render Graph Pass
+    #if !UNITY_6000_1_OR_NEWER
     #if UNITY_6000_0_OR_NEWER
         [Obsolete]
     #endif
@@ -569,6 +570,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
             camVPMatrix = GL.GetGPUProjectionMatrix(camera.nonJitteredProjectionMatrix, true) * cameraData.GetViewMatrix();
             prevCamVPMatrix = prevCamVPMatrix == null ? camera.previousViewProjectionMatrix : prevCamVPMatrix;
         }
+    #endif
         #endregion
 
     #if UNITY_6000_0_OR_NEWER
@@ -668,6 +670,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
         }
 
         #region Non Render Graph Pass
+    #if !UNITY_6000_1_OR_NEWER
 
         // The index of current camera in the "CameraHistoryData[]"
         private int cameraHistoryIndex;
@@ -947,6 +950,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
 
             ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Motion);
         }
+    #endif
         #endregion
 
     #if UNITY_6000_0_OR_NEWER
@@ -1470,6 +1474,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
         private readonly ShaderTagId universalForwardOnly = new ShaderTagId(k_UniversalForwardOnly);
 
         #region Non Render Graph Pass
+    #if !UNITY_6000_1_OR_NEWER
 
     #if UNITY_6000_0_OR_NEWER
         [Obsolete]
@@ -1567,6 +1572,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
             cmd.Clear();
             CommandBufferPool.Release(cmd);
         }
+    #endif
         #endregion
 
     #if UNITY_6000_0_OR_NEWER
@@ -1769,6 +1775,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
         }
 
         #region Non Render Graph Pass
+    #if !UNITY_6000_1_OR_NEWER
     #if UNITY_6000_0_OR_NEWER
         [Obsolete]
     #endif
@@ -1900,6 +1907,7 @@ public class ScreenSpaceGlobalIlluminationURP : ScriptableRendererFeature
                 m_RenderStateBlock.mask |= RenderStateMask.Depth;
             }
         }
+    #endif
         #endregion
 
     #if UNITY_6000_0_OR_NEWER
